@@ -21,6 +21,15 @@ where
             }),
         }
     }
+
+    pub fn and_then<S, F: 'a + FnOnce(T) -> ParseResult<S>>(self, func: F) -> Parser<'a, S> {
+        Parser {
+            func: Box::new(|v: &str| match self.parse(v) {
+                ParseResult::Success(vv) => func(vv),
+                ParseResult::Failure => ParseResult::failure(),
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -55,4 +64,14 @@ fn test_parse_map() {
     let p = p.map(|_| 10);
     let r = p.parse("a");
     assert_eq!(r, ParseResult::success(10));
+}
+
+#[test]
+fn test_parse_and_then() {
+    let p = Parser {
+        func: Box::new(|s| ParseResult::success(s)),
+    };
+    let p = p.and_then(|_| ParseResult::success(15));
+    let r = p.parse("a");
+    assert_eq!(r, ParseResult::success(15));
 }

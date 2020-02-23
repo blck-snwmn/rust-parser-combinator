@@ -1,8 +1,8 @@
 pub mod parser;
 pub mod parser_result;
 
-use crate::parser::Parser;
-use crate::parser_result::ParseResult;
+pub use crate::parser::Parser;
+pub use crate::parser_result::ParseResult;
 
 pub fn match_string<'a>(patten: &str) -> Parser<'a, &str> {
     Parser {

@@ -2,29 +2,29 @@ pub struct Parser<'a, T>
 where
     T: 'a,
 {
-    func: Box<dyn 'a + FnOnce(&'a str) -> ParseResult<T>>,
+    func: Box<dyn 'a + Fn(&'a str) -> ParseResult<T>>,
 }
 
 impl<'a, T> Parser<'a, T>
 where
     T: 'a,
 {
-    pub fn parse(self, input: &'a str) -> ParseResult<T> {
+    pub fn parse(&self, input: &'a str) -> ParseResult<T> {
         (self.func)(input)
     }
 
-    pub fn map<S, F: 'a + FnOnce(T) -> S>(self, func: F) -> Parser<'a, S> {
+    pub fn map<S, F: 'a + Fn(T) -> S>(self, func: F) -> Parser<'a, S> {
         Parser {
-            func: Box::new(|v: &str| match self.parse(v) {
+            func: Box::new(move |v: &str| match self.parse(v) {
                 ParseResult::Success(vv) => ParseResult::success(func(vv)),
                 ParseResult::Failure => ParseResult::failure(),
             }),
         }
     }
 
-    pub fn and_then<S, F: 'a + FnOnce(T) -> ParseResult<S>>(self, func: F) -> Parser<'a, S> {
+    pub fn and_then<S, F: 'a + Fn(T) -> ParseResult<S>>(self, func: F) -> Parser<'a, S> {
         Parser {
-            func: Box::new(|v: &str| match self.parse(v) {
+            func: Box::new(move |v: &str| match self.parse(v) {
                 ParseResult::Success(vv) => func(vv),
                 ParseResult::Failure => ParseResult::failure(),
             }),

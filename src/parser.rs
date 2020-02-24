@@ -38,10 +38,7 @@ where
     /// ```
     pub fn map<S, F: 'a + Fn(T) -> S>(self, func: F) -> Parser<'a, S> {
         Parser {
-            func: Box::new(move |v: &str| match self.parse(v) {
-                ParseResult::Success(vv) => ParseResult::success(func(vv)),
-                ParseResult::Failure => ParseResult::failure(),
-            }),
+            func: Box::new(move |v: &str| self.parse(v).map(|x| func(x))),
         }
     }
 
@@ -59,10 +56,7 @@ where
     /// ```
     pub fn and_then<S, F: 'a + Fn(T) -> ParseResult<S>>(self, func: F) -> Parser<'a, S> {
         Parser {
-            func: Box::new(move |v: &str| match self.parse(v) {
-                ParseResult::Success(vv) => func(vv),
-                ParseResult::Failure => ParseResult::failure(),
-            }),
+            func: Box::new(move |v: &str| self.parse(v).and_then(|x| func(x))),
         }
     }
 }
